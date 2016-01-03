@@ -11,7 +11,7 @@ filename = askopenfilename() # show an "Open" dialog box and return the path to 
 im = cv2.imread(filename)
 
 print(filename)
-raw_input("PRESS ENTER TO CONTINUE")
+input("PRESS ENTER TO CONTINUE")
 
 print(im.shape)
 
@@ -21,7 +21,7 @@ yconst = 109
 w = im.shape[0]/xconst
 h = im.shape[1]/yconst
 
-ndir = raw_input("Digite o nome do diretorio para salvar os sprites:")
+ndir = input("Digite o nome do diretorio para salvar os sprites:")
 
 for i in range(0, h):
 	for j in range(0, w):
