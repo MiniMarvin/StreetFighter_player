@@ -29,7 +29,7 @@ i = 0
 j = 0
 
 while i < h & j < w:
-	
+	#rotina para realizar o procedimento por toda a imagem
 	
 
 
