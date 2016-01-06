@@ -36,46 +36,55 @@ while i < h & j < w:
 
 ##################################################################################
 def findSprite(beginx, beginy, image):
-	x = beginx #the size of a collum
-	y = beginy #the begining of the sprite
-	j = beginy #the end of the sprite
+    x = beginx #the size of a collum
+    y = beginy #the begining of the sprite
+    j = beginy #the end of the sprite
 
-	i = beginx
-	
+    i = beginx
+    
+    #find the white line under all sprites
+    while image[x][y] != [255,255,255, 255]:
+        x++
 
-	while image[x][y] != [255,255,255, 255]:
-		x++
+    #iterate through the colum looking if every pixel is equal to a transparant line, if not ends the looking
+    #because we found the first line in the sprite
 
-	#iterate through the colum looking if every pixel is equal to a transparant line, if not ends the looking
-	while image[i][y][4] == 0:
-		if i < x:
-			i++
-		else:
-			i = beginx
-			y++
 
-	j = y
-	flag = 0
-	i = beginx
+    #while the colums are homogenius, because when they find a non homogenius line it is the begining of the sprite
+    while isHomogenious(1, y, beginx, x, image):
+        y++
 
-	#iterate through the array looking for a new transparent line
-	while flag == 0:
+    j = y
+    flag = 0
+    i = beginx
 
-		if i < x & image[i][j][4] == 0:
-			i++
-		elif i < x & image[i][j][4] != 0:
-			#?# add a routine to minimize the image size
-			i = beginx
-			j++
-		else:
-			flag = 1
-			i = beginx
-			j++	
+    #iterate through the array looking for a new transparent line
+    while not isHomogenious(1, j, beginx, x, image):
+        j++
 
-	#the sprite matrix
-	buff = image[beginx:x, y:j]
+    #the sprite matrix
+    buff = image[beginx:x, y:j]
 
-	return buff
+    return buff
+
+
+#check if a delimited line or colum defined by [posb, pose] is homogenious and return it
+#loc = 0: line
+#loc = 1: colum
+def isHomogenious(loc, pos, posb, pose, image):
+
+    flag = 1
+    for i in range(posb, pose):
+        if loc == 0:
+            if image[pos][i] != image[pos][i+1]:
+                flag = 0
+                break
+        else:
+            if image[i][pos] != image[i+1][pos]:
+                flag = 0
+                break
+
+    return flag
 
 ##old algorithm###################################################################
 def base():
