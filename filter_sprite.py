@@ -1,8 +1,21 @@
+#########################################################
+#														#
+#@Author: Caio M. Gomes									#
+#@Brif: Script to extract some sprites from a sprite	#
+#sheet of street fighter II. Necessary to build the		#
+#street fighter player AI								#
+#														#
+#########################################################
+
 import cv2
 import numpy as np
 import os
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
+
+nextx = 0
+nexty = 0
+buffx = 0
 
 
 #check if a delimited line or colum defined by [posb, pose] is homogenious and return it
@@ -35,17 +48,28 @@ def findSprite(beginx, beginy, image):
 	y = beginy 
 	#the end of the sprite
 	j = beginy 
-
 	i = beginx
+
+	global nextx
+	global nexty
+	global buffx
     
+	sumbuff = 0
+
+	if (buffx == nextx):
+		sumbuff = 1
+
 	#find the white line under all sprites
 	print(image[x][y])
-	while ((image[x][y] == [136,136,112,255]).all())|((image[x][y] == [136,136,112,0]).all()):
+
+	while ((image[x][y] == [136,136,112,255]).all())|((image[x][y] == [136,136,112,0]).all())&(x < image.shape[0]):
 		x += 1
+		if sumbuff == 1:
+			buffx += 1
 		#print(x)
 
 	#normalize the values(cutoff the white line for sure)
-	x -= 1
+	x -= 2
 
 	#iterate through the colum looking if every pixel is equal to a transparant line, if not ends the looking
 	#because we found the first line in the sprite
@@ -54,14 +78,16 @@ def findSprite(beginx, beginy, image):
 	#hom = isHomogenious(1, y, beginx, x, image)
 	#print("y:"+str(y)+" bx:"+str(beginx)+" x:"+str(x))
 	nextflag = 0
-	while nextflag < 3:
+	while (nextflag < 3 )&(y < image.shape[1]):
+
 		if(isHomogenious(1, y, beginx, x, image) == 0 ):
 			nextflag += 1
 		else:
 			nextflag = 0
 		y += 1
-		print("y: "+str(y))
+		#print("y: "+str(y))
 
+	y -= 3 #normalization for y
 	j = y
 	flag = 0
 	i = beginx
@@ -69,15 +95,22 @@ def findSprite(beginx, beginy, image):
 	#iterate through the array looking for a new transparent line
 	while (isHomogenious(1, j, beginx, x, image) == 0):
 		j += 1
-		print("j: "+str(j))
+		#print("j: "+str(j))
 
+
+	#pass the values obtained to the global variables
+	#nextx = x+2
+	#buffx = x+4
+	nextx = 0
+	nexty = j+4
 	#the sprite matrix
 	buff = image[beginx:x, y:j]
 
 	return buff
 
 
-##old algorithm###################################################################
+##old algorithm####
+###############################################################
 def base():
 	for i in range(0, h):
 		for j in range(0, w):
@@ -110,6 +143,10 @@ alpha_channel = np.ones((img.shape[0], img.shape[1]), img.dtype)*255
 
 newim = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
 
+h = newim.shape[0]
+w = newim.shape[1]
+
+#turns the entire image transparent
 for i in range(0, newim.shape[0]):
 	for j in range(0, newim.shape[1]):
 		#print(im[i][j])
@@ -124,9 +161,9 @@ raw_input("PRESS ENTER TO CONTINUE")
 print(newim.shape)
 cv2.imwrite(ndir+"/buff.png", newim)
 
-cv2.imshow("sprite", newim)
-imp = findSprite(0,0,newim)
 
+
+##imp = findSprite(nextx,nexty,newim)
 #xconst = 49
 #yconst = 109
 xconst = 1
@@ -135,11 +172,35 @@ yconst = 1
 #w = im.shape[0]/xconst
 #h = im.shape[1]/yconst
 
-i = 0
-j = 0
+##cv2.imwrite(ndir+"/img_"+str(beginx)+"_"+str(beginy)+".png", imp)
+
+h = nextx
+w = nexty
+
+imgcounterx = 0
+imgcountery = 0
+soma = 0
+
+while h < newim.shape[0]:
+	while w < newim.shape[1]:
+
+		imp = findSprite(nextx,nexty,newim)
+		filename = ndir+"/img_"+str(imgcounterx)+"_"+str(imgcountery)+".png"
+		cv2.imwrite(filename, imp)
+		if os.stat(filename).st_size <= 2:
+			os.system("rm "+filename)
+		else:
+			imgcountery += 1
+
+		h = nextx
+		w = nexty
 
 
-cv2.imwrite(ndir+"/p.png", imp)
+	nextx = buffx
+	nexty = 0
+	w = 0
+	imgcounterx += 1
+	imgcountery = 0
+	print("nx: "+str(nextx)+" / ny: "+str(nexty))
 
-#while i < h & j < w:    
-    #rotina para realizar o procedimento por toda a imagem
+#rotina para realizar o procedimento por toda a imagem
